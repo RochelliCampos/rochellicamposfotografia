@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Rochelli Campos — Fotografia</title>
+<link rel="icon" href="images/landscape/page01.jpg" />
+<style>
+  :root{
+    --bg:#060606;
+    --muted:rgba(255,255,255,0.72);
+    --accent:#c6864a;
+    --max-width:1920px;
+    --autoplay-interval:5000;
+  }
+  *{box-sizing:border-box}
+  html,body{
+    height:100%;
+    margin:0;
+    font-family:Inter,Segoe UI,Arial,sans-serif;
+    background:var(--bg);
+    color:#fff;
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:14px 22px;
+    border-bottom:1px solid rgba(255,255,255,0.04);
+    position:sticky;
+    top:0;
+    background:linear-gradient(180deg, rgba(6,6,6,0.75), rgba(6,6,6,0.5));
+    z-index:40;
+  }
+  .brand{display:flex;gap:12px;align-items:center}
+  .logo{
+    width:52px;height:52px;border-radius:8px;overflow:hidden;background:#111;
+  }
+  .brand .title{font-weight:700;font-size:16px}
+
+  .actions{display:flex;gap:10px;align-items:center}
+  .btn{
+    display:inline-block;
+    padding:8px 12px;
+    border-radius:10px;
+    text-decoration:none;
+    font-weight:700;
+    font-size:14px;
+    border:1px solid rgba(255,255,255,0.06);
+    color:inherit;
+    background:transparent;
+  }
+  .btn.primary{
+    background:var(--accent);
+    color:#111;
+    border:none;
+  }
+
+  main{
+    max-width:var(--max-width);
+    margin:22px auto;
+    padding:0 18px;
+    display:flex;
+    justify-content:center;
+  }
+
+  .viewer{width:100%;max-width:1400px}
+
+  .card{
+    border-radius:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    padding:12px;
+    box-shadow:0 12px 40px rgba(0,0,0,0.6);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    position:relative;
+  }
+  .main-img{
+    width:100%;
+    height:auto;
+    border-radius:10px;
+    max-height:86vh;
+    object-fit:contain;
+    cursor:pointer;
+    transition:transform .28s ease;
+  }
+
+  .nav-arrow{
+    position:fixed;
+    top:50%;
+    transform:translateY(-50%);
+    width:56px;
+    height:56px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(0,0,0,0.3);
+    border:1px solid rgba(255,255,255,0.04);
+    cursor:pointer;
+    z-index:160;
+    user-select:none;
+  }
+  .nav-arrow.left{left:14px}
+  .nav-arrow.right{right:14px}
+  .nav-arrow:hover{transform:translateY(-50%) scale(1.04)}
+
+  footer{
+    padding:20px;
+    text-align:center;
+    color:var(--muted);
+    font-size:13px;
+    margin-top:22px;
+  }
+
+  @media (max-width:1100px){
+    .nav-arrow{display:none}
+    main{padding:0 12px}
+  }
+  @media (max-width:640px){
+    header{padding:10px}
+    .brand .title{font-size:14px}
+  }
+  @media (min-width:1920px){
+    main{max-width:1920px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="logo">
+      <img id="logoImg" src="images/landscape/page01.jpg"
+           style="width:100%;height:100%;object-fit:cover" alt="">
+    </div>
+    <div><div class="title">Rochelli Campos</div></div>
+  </div>
+
+  <div class="actions">
+    <a class="btn" id="homeBtn" href="#">Home</a>
+    <a class="btn" href="Portifólio - Rochelli Campos Fotografia.pdf" download>Baixar apresentação</a>
+    <a class="btn primary" id="contactBtn" href="#">Contato</a>
+  </div>
+</header>
+
+<main>
+  <div class="viewer">
+    <div class="card" id="card">
+      <img id="displayImage" class="main-img"
+           src="images/landscape/page01.jpg"
+           alt="Página 1" loading="eager">
+    </div>
+  </div>
+</main>
+
+<footer>
+  Rochelli Campos — Fotografia
+</footer>
+
+<button class="nav-arrow left" id="prevBtn">‹</button>
+<button class="nav-arrow right" id="nextBtn">›</button>
+
+<script>
+/* ===== CONFIGURAÇÃO ===== */
+
+const desktopCount = 11;  // quantidade de imagens landscape (page01..page11)
+const mobileCount  = 11;  // quantidade de imagens portrait  (page01..page11)
+
+const landscapePath = 'images/landscape/';
+const portraitPath  = 'images/portrait/';
+const ext = '.jpg';
+
+const autoplayInterval = 5000;
+
+/* ===== LÓGICA ===== */
+
+(function(){
+
+  /* cria arrays de imagens com o prefixo CORRETO "page" */
+  const landscapePages = [];
+  for(let i=1;i<=desktopCount;i++){
+    landscapePages.push(landscapePath + 'page' + String(i).padStart(2,'0') + ext);
+  }
+
+  const portraitPages = [];
+  for(let i=1;i<=mobileCount;i++){
+    portraitPages.push(portraitPath + 'page' + String(i).padStart(2,'0') + ext);
+  }
+
+  /* elementos */
+  const displayImage = document.getElementById('displayImage');
+  const logoImg = document.getElementById('logoImg');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const homeBtn = document.getElementById('homeBtn');
+  const contactBtn = document.getElementById('contactBtn');
+  const card = document.getElementById('card');
+
+  let isPortraitMode = detectPortrait();
+  let pages = isPortraitMode ? portraitPages : landscapePages;
+  let current = 0;
+  let autoplayId = null;
+  let isHovered = false;
+
+  function detectPortrait(){
+    return (window.matchMedia && window.matchMedia('(orientation: portrait)').matches)
+           || window.innerWidth <= 900;
+  }
+
+  function loadWithFallback(src1, src2, callback){
+    const img = new Image();
+    img.onload = ()=> callback(src1);
+    img.onerror = ()=>{
+      const alt = src2 || src1;
+      const img2 = new Image();
+      img2.onload = ()=> callback(alt);
+      img2.onerror = ()=> callback(src1);
+      img2.src = alt;
+    };
+    img.src = src1;
+  }
+
+  function refreshMode(){
+    const mode = detectPortrait();
+    if(mode === isPortraitMode) return;
+    isPortraitMode = mode;
+    pages = isPortraitMode ? portraitPages : landscapePages;
+    const cap = pages[0] || landscapePages[0];
+    logoImg.src = cap;
+    if(current >= pages.length) current = pages.length - 1;
+    showIndex(current);
+  }
+
+  function showIndex(i){
+    current = (i + pages.length) % pages.length;
+    const portraitSrc = portraitPages[current];
+    const landscapeSrc = landscapePages[current];
+
+    if(isPortraitMode){
+      loadWithFallback(portraitSrc, landscapeSrc, src=>{
+        displayImage.src = src;
+        displayImage.alt = "Página " + (current+1);
+      });
+    } else {
+      loadWithFallback(landscapeSrc, portraitSrc, src=>{
+        displayImage.src = src;
+        displayImage.alt = "Página " + (current+1);
+      });
+    }
+  }
+
+  function next(){ showIndex(current+1); }
+  function prev(){ showIndex(current-1); }
+
+  function startAutoplay(){
+    stopAutoplay();
+    autoplayId = setInterval(()=>{ if(!isHovered) next(); }, autoplayInterval);
+  }
+  function stopAutoplay(){
+    if(autoplayId){ clearInterval(autoplayId); autoplayId = null; }
+  }
+
+  nextBtn.addEventListener('click', ()=>{ next(); resetAutoplay(); });
+  prevBtn.addEventListener('click', ()=>{ prev(); resetAutoplay(); });
+
+  displayImage.addEventListener('click', ()=>{ next(); resetAutoplay(); });
+
+  homeBtn.addEventListener('click', e=>{
+    e.preventDefault();
+    showIndex(0);
+    resetAutoplay();
+  });
+
+  contactBtn.addEventListener('click', e=>{
+    e.preventDefault();
+    showIndex(pages.length - 1);
+    resetAutoplay();
+  });
+
+  document.addEventListener('keydown', e=>{
+    if(e.key==='ArrowLeft'){ prev(); resetAutoplay(); }
+    if(e.key==='ArrowRight'){ next(); resetAutoplay(); }
+  });
+
+  card.addEventListener('mouseenter', ()=>{ isHovered = true; });
+  card.addEventListener('mouseleave', ()=>{ isHovered = false; });
+
+  card.addEventListener('touchstart', ()=>{ isHovered = true; });
+  card.addEventListener('touchend', ()=>{ isHovered = false; });
+
+  function resetAutoplay(){
+    isHovered = true;
+    stopAutoplay();
+    setTimeout(()=>{ isHovered = false; startAutoplay(); }, 2200);
+  }
+
+  window.addEventListener('resize', refreshMode);
+  if(window.matchMedia){
+    window.matchMedia('(orientation: portrait)')
+      .addEventListener('change', refreshMode);
+  }
+
+  showIndex(0);
+  startAutoplay();
+
+})();
+</script>
+</body>
+</html>
